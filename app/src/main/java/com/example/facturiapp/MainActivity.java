@@ -31,21 +31,25 @@ public class MainActivity extends AppCompatActivity {
 
         // Test
         facturaList = new ArrayList<>();
-        facturaList.add(new Factura("1", "SC Ardealul SRL", 1500.50, "10-10-2023", "Servicii IT", true));
-        facturaList.add(new Factura("2", "Ion Popescu", 350.00, "15-10-2023", "Reparatie PC", false));
-        facturaList.add(new Factura("3", "Tech Solutions", 4200.00, "20-10-2023", "Achizitie Servere", true));
-        facturaList.add(new Factura("1", "SC Ardealul SRL", 1500.50, "10-10-2023", "Servicii IT", true));
-        facturaList.add(new Factura("2", "Ion Popescu", 350.00, "15-10-2023", "Reparatie PC", false));
-        facturaList.add(new Factura("3", "Tech Solutions", 4200.00, "20-10-2023", "Achizitie Servere", true));
-        facturaList.add(new Factura("1", "SC Ardealul SRL", 1500.50, "10-10-2023", "Servicii IT", true));
-        facturaList.add(new Factura("2", "Ion Popescu", 350.00, "15-10-2023", "Reparatie PC", false));
-        facturaList.add(new Factura("3", "Tech Solutions", 4200.00, "20-10-2023", "Achizitie Servere", true));
-        facturaList.add(new Factura("1", "SC Ardealul SRL", 1500.50, "10-10-2023", "Servicii IT", true));
-        facturaList.add(new Factura("2", "Ion Popescu", 350.00, "15-10-2023", "Reparatie PC", false));
-        facturaList.add(new Factura("3", "Tech Solutions", 4200.00, "20-10-2023", "Achizitie Servere", true));
-        facturaList.add(new Factura("1", "SC Ardealul SRL", 1500.50, "10-10-2023", "Servicii IT", true));
-        facturaList.add(new Factura("2", "Ion Popescu", 350.00, "15-10-2023", "Reparatie PC", false));
-        facturaList.add(new Factura("3", "Tech Solutions", 4200.00, "20-10-2023", "Achizitie Servere", true));
+        final androidx.activity.result.ActivityResultLauncher<android.content.Intent> addInvoiceLauncher =
+                registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(), result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        android.content.Intent data = result.getData();
+                        String clientName = data.getStringExtra("CLIENT_NAME");
+                        double amount = data.getDoubleExtra("AMOUNT", 0.0);
+                        String date = data.getStringExtra("DATE");
+                        String description = data.getStringExtra("DESCRIPTION");
+                        boolean isPaid = data.getBooleanExtra("IS_PAID", false);
+
+                        // Creare factura nou
+                        String newId = String.valueOf(System.currentTimeMillis());
+                        Factura facturaNoua = new Factura(newId, clientName, amount, date, description, isPaid);
+
+                        // Redesenare la adaugare
+                        facturaList.add(facturaNoua);
+                        invoiceAdapter.notifyItemInserted(facturaList.size() - 1);
+                    }
+                });
 
         invoiceAdapter = new InvoiceAdapter(facturaList);
         recyclerViewInvoices.setAdapter(invoiceAdapter);
@@ -57,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         fabAddInvoice.setOnClickListener(v -> {
-            Toast.makeText(MainActivity.this, "Aici vom deschide ecranul de Adaugare", Toast.LENGTH_SHORT).show();
+            android.content.Intent intent = new android.content.Intent(MainActivity.this, AddInvoiceActivity.class);
+            addInvoiceLauncher.launch(intent);
         });
     }
 }
